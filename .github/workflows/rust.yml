@@ -12,7 +12,7 @@ jobs:
       matrix:
         #os: [macos-latest, ubuntu-latest, windows-latest]
         #rust: [stable, beta, nightly]
-        os: [macos-latest]
+        os: [ubuntu-latest]
         rust: [stable]
 
     steps:
