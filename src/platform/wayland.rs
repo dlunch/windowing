@@ -21,13 +21,14 @@ pub struct WindowImpl {
 }
 
 impl WindowImpl {
-    pub fn new(width: u32, height: u32, title: &str) -> Self {
+    pub fn new(width: i32, height: i32, title: &str) -> Self {
         let (env, _, queue) = new_default_environment!(Wayland, desktop).expect("Unable to connect to a Wayland compositor");
 
         let surface = env.create_surface().detach();
+        let dimensions = (width as u32, height as u32);
 
         let window = env
-            .create_window::<FallbackFrame, _>(surface, None, (width, height), |e, mut d| {
+            .create_window::<FallbackFrame, _>(surface, None, dimensions, |e, mut d| {
                 let events = d.get::<Vec<WEvent>>().unwrap();
 
                 events.push(e);
@@ -40,7 +41,7 @@ impl WindowImpl {
             env,
             window,
             queue,
-            dimensions: (width, height),
+            dimensions,
         }
     }
 
