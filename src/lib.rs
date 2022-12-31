@@ -7,7 +7,7 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(width: u32, height: u32, title: &str) -> Self {
+    pub fn new(width: i32, height: i32, title: &str) -> Self {
         let window_impl = WindowImpl::new(width, height, title);
 
         Self { window_impl }
