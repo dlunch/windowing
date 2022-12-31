@@ -3,5 +3,5 @@ name = "windowing"
 version = "0.1.0"
 edition = "2021"
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(target_os = "linux")'.dependencies]
 smithay-client-toolkit = { version = "^0.16", default-features = false }

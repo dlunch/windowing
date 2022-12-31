@@ -1,7 +1,6 @@
 mod platform;
 
-#[cfg(unix)]
-use platform::wayland::WindowImpl;
+use platform::WindowImpl;
 
 pub struct Window {
     window_impl: WindowImpl,
