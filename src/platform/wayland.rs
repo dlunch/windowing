@@ -50,7 +50,7 @@ impl WindowImpl {
 
         'outer: loop {
             let mut events = Vec::<WEvent>::new();
-            self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {:?} {:?}", e, o)).unwrap();
+            self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}")).unwrap();
 
             for event in events {
                 match event {
@@ -64,7 +64,7 @@ impl WindowImpl {
                             self.window.resize(w, h);
                             self.dimensions = (w, h);
                         }
-                        println!("Window states: {:?}", states);
+                        println!("Window states: {states:?}");
 
                         self.window.refresh();
                         redraw(&mut pool, self.window.surface(), self.dimensions).expect("Failed to draw");
