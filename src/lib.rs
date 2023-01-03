@@ -1,3 +1,4 @@
+mod event;
 mod platform;
 
 use platform::WindowImpl;
