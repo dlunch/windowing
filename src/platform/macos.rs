@@ -2,7 +2,7 @@
 pub struct WindowImpl {}
 
 impl WindowImpl {
-    pub fn new(width: i32, height: i32, title: &str) -> Self {
+    pub fn new(_width: i32, _height: i32, _title: &str) -> Self {
         Self {}
     }
 
