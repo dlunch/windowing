@@ -7,3 +7,8 @@ pub use self::wayland::WindowImpl;
 mod windows;
 #[cfg(windows)]
 pub use self::windows::WindowImpl;
+
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use self::macos::WindowImpl;
