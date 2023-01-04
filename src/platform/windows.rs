@@ -6,15 +6,17 @@ use windows::{
         Foundation::{HWND, LPARAM, LRESULT, WPARAM},
         System::LibraryLoader::GetModuleHandleW,
         UI::WindowsAndMessaging::{
-            CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, PostQuitMessage, RegisterClassW, TranslateMessage,
-            CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, IDC_ARROW, WM_DESTROY, WM_PAINT, WNDCLASSW, WS_OVERLAPPEDWINDOW, WS_VISIBLE,
+            CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, PostQuitMessage, RegisterClassW,
+            SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW, WM_CREATE,
+            WM_DESTROY, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW, WS_VISIBLE,
         },
     },
 };
 
+use crate::Event;
+
 pub struct WindowImpl {
-    #[allow(dead_code)]
-    hwnd: HWND,
+    inner: Box<WindowImplInner>,
 }
 
 impl WindowImpl {
@@ -37,7 +39,11 @@ impl WindowImpl {
 
             let title = title.encode_utf16().chain(iter::once(0)).collect::<Box<[u16]>>();
 
-            let hwnd = CreateWindowExW(
+            let inner = Box::new(WindowImplInner {
+                handle: HWND(0),
+                events: Vec::new(),
+            });
+            CreateWindowExW(
                 Default::default(),
                 wnd_class.lpszClassName,
                 PCWSTR::from_raw(title.as_ptr()),
@@ -49,35 +55,70 @@ impl WindowImpl {
                 None,
                 None,
                 instance,
-                None,
+                Some(inner.as_ref() as *const _ as *const _),
             );
 
-            Self { hwnd }
+            Self { inner }
         }
     }
 
-    pub fn run(self) {
-        let mut message = Default::default();
+    pub fn run(mut self) {
+        let mut msg = Default::default();
 
         unsafe {
-            while GetMessageW(&mut message, HWND(0), 0, 0).into() {
-                TranslateMessage(&message);
-                DispatchMessageW(&message);
-            }
-        }
-    }
+            while GetMessageW(&mut msg, HWND(0), 0, 0).into() {
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
 
-    extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-        unsafe {
-            match message {
-                WM_PAINT => LRESULT(0),
-                WM_DESTROY => {
-                    println!("WM_DESTROY");
-                    PostQuitMessage(0);
-                    LRESULT(0)
+                for event in self.inner.events.drain(..) {
+                    // TODO
+                    println!("{:?}", event)
                 }
-                _ => DefWindowProcW(window, message, wparam, lparam),
             }
+        }
+    }
+
+    unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+        let mut userdata = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+        if userdata == 0 && (msg == WM_NCCREATE || msg == WM_CREATE) {
+            let create_struct = lparam.0 as *const CREATESTRUCTW;
+            let inner = (*create_struct).lpCreateParams as *mut WindowImplInner;
+
+            SetWindowLongPtrW(hwnd, GWLP_USERDATA, inner as _);
+
+            (*inner).handle = hwnd;
+
+            userdata = inner as isize;
+        }
+
+        if userdata == 0 {
+            DefWindowProcW(hwnd, msg, wparam, lparam)
+        } else {
+            let inner = userdata as *mut WindowImplInner;
+            (*inner).handle_message(msg, wparam, lparam)
+        }
+    }
+}
+
+struct WindowImplInner {
+    handle: HWND,
+    events: Vec<Event>,
+}
+
+impl WindowImplInner {
+    pub fn handle_message(&mut self, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+        match msg {
+            WM_CREATE => {
+                self.events.push(Event::Created);
+
+                LRESULT(0)
+            }
+            WM_DESTROY => {
+                unsafe { PostQuitMessage(0) };
+
+                LRESULT(0)
+            }
+            _ => unsafe { DefWindowProcW(self.handle, msg, wparam, lparam) },
         }
     }
 }

@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Event {
     Created,
     Resize((i32, i32)),
