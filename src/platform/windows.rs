@@ -72,7 +72,7 @@ impl WindowImpl {
 
                 for event in self.inner.events.drain(..) {
                     // TODO
-                    println!("{:?}", event)
+                    println!("{event:?}")
                 }
             }
         }
