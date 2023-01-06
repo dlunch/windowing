@@ -1,3 +1,7 @@
+use std::future::Future;
+
+use crate::Event;
+
 #[derive(Default)]
 pub struct WindowImpl {}
 
@@ -6,5 +10,10 @@ impl WindowImpl {
         Self {}
     }
 
-    pub fn run(self) {}
+    pub async fn run<F, Fut>(mut self, _: F)
+    where
+        F: Fn(Event) -> Fut,
+        Fut: Future<Output = ()>,
+    {
+    }
 }
