@@ -11,7 +11,11 @@ impl Window {
         Self { window_impl }
     }
 
-    pub fn run(self) {
-        self.window_impl.run()
+    pub async fn run(self) {
+        self.window_impl
+            .run(|event| async move {
+                println!("{event:?}");
+            })
+            .await
     }
 }

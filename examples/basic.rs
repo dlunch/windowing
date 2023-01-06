@@ -1,6 +1,7 @@
 use windowing::Window;
 
-pub fn main() {
+#[tokio::main]
+pub async fn main() {
     let w = Window::new(640, 480, "test");
-    w.run();
+    w.run().await;
 }

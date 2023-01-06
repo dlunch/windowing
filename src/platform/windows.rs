@@ -1,4 +1,4 @@
-use std::{default::Default, iter};
+use std::{default::Default, future::Future, iter};
 
 use windows::{
     core::{w, PCWSTR},
@@ -62,7 +62,11 @@ impl WindowImpl {
         }
     }
 
-    pub fn run(mut self) {
+    pub async fn run<F, Fut>(mut self, callback: F)
+    where
+        F: Fn(Event) -> Fut,
+        Fut: Future<Output = ()>,
+    {
         let mut msg = Default::default();
 
         unsafe {
@@ -71,8 +75,7 @@ impl WindowImpl {
                 DispatchMessageW(&msg);
 
                 for event in self.inner.events.drain(..) {
-                    // TODO
-                    println!("{event:?}")
+                    callback(event).await
                 }
             }
         }

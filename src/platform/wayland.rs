@@ -45,7 +45,11 @@ impl WindowImpl {
         }
     }
 
-    pub fn run(mut self) {
+    pub async fn run<F, Fut>(mut self, _: F)
+    where
+        F: Fn(Event) -> Fut,
+        Fut: Future<Output = ()>,
+    {
         let mut pool = self.env.create_auto_pool().expect("Failed to create a memory pool !");
 
         'outer: loop {
