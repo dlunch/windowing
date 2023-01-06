@@ -1,4 +1,4 @@
-use std::{cmp::min, io, thread, time::Duration};
+use std::{cmp::min, future::Future, io, thread, time::Duration};
 
 use smithay_client_toolkit::{
     environment::Environment,
@@ -10,6 +10,8 @@ use smithay_client_toolkit::{
     shm::AutoMemPool,
     window::{Event as WEvent, FallbackFrame, Window},
 };
+
+use crate::Event;
 
 smithay_client_toolkit::default_environment!(Wayland, desktop);
 
