@@ -1,6 +1,6 @@
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
-use crate::platform::WindowImpl;
+use crate::{event::Event, platform::WindowImpl};
 
 pub struct Window {
     window_impl: WindowImpl,
@@ -13,8 +13,8 @@ impl Window {
         Self { window_impl }
     }
 
-    pub async fn run(self) {
-        self.window_impl.run(|_| async move {}).await
+    pub async fn next_events(&mut self) -> impl Iterator<Item = Event> {
+        self.window_impl.next_events().await
     }
 }
 

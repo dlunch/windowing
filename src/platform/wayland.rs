@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
-use core::{cmp::min, future::Future, time::Duration};
-use std::{io, thread};
+use core::{cmp::min, iter};
+use std::io;
 
 use raw_window_handle::{RawWindowHandle, WaylandWindowHandle};
 use smithay_client_toolkit::{
@@ -50,50 +50,46 @@ impl WindowImpl {
         }
     }
 
-    pub async fn run<F, Fut>(mut self, _: F)
-    where
-        F: Fn(Event) -> Fut,
-        Fut: Future<Output = ()>,
-    {
+    pub async fn next_events(&mut self) -> impl Iterator<Item = Event> {
         let mut pool = self.env.create_auto_pool().expect("Failed to create a memory pool !");
 
-        'outer: loop {
-            let mut events = Vec::<WEvent>::new();
-            self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}")).unwrap();
-
-            for event in events {
-                match event {
-                    WEvent::Refresh => {
-                        self.window.refresh();
-                        self.window.surface().commit();
-                    }
-                    WEvent::Close => break 'outer,
-                    WEvent::Configure { new_size, states } => {
-                        if let Some((w, h)) = new_size {
-                            self.window.resize(w, h);
-                            self.dimensions = (w, h);
-                        }
-                        println!("Window states: {states:?}");
-
-                        self.window.refresh();
-                        redraw(&mut pool, self.window.surface(), self.dimensions).expect("Failed to draw");
-                    }
+        let mut events = Vec::<WEvent>::new();
+        {
+            let read_guard = self.queue.prepare_read().unwrap();
+            let r = read_guard.read_events();
+            if let Err(err) = r {
+                if err.kind() != io::ErrorKind::WouldBlock {
+                    panic!("{}", err);
                 }
             }
-            self.queue.display().flush().unwrap();
-
-            {
-                let read_guard = self.queue.prepare_read().unwrap();
-                let r = read_guard.read_events();
-                if let Err(err) = r {
-                    if err.kind() != io::ErrorKind::WouldBlock {
-                        panic!("{}", err);
-                    }
-                }
-            }
-
-            thread::sleep(Duration::from_millis(16));
         }
+
+        self.queue
+            .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
+            .unwrap();
+
+        for event in events {
+            match event {
+                WEvent::Refresh => {
+                    self.window.refresh();
+                    self.window.surface().commit();
+                }
+                WEvent::Close => return iter::once(Event::Close),
+                WEvent::Configure { new_size, states } => {
+                    if let Some((w, h)) = new_size {
+                        self.window.resize(w, h);
+                        self.dimensions = (w, h);
+                    }
+                    println!("Window states: {states:?}");
+
+                    self.window.refresh();
+                    redraw(&mut pool, self.window.surface(), self.dimensions).expect("Failed to draw");
+                }
+            }
+        }
+        self.queue.display().flush().unwrap();
+
+        iter::once(Event::Paint)
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

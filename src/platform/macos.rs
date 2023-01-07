@@ -1,5 +1,3 @@
-use core::future::Future;
-
 use raw_window_handle::{AppKitWindowHandle, RawWindowHandle};
 
 use crate::Event;
@@ -12,11 +10,8 @@ impl WindowImpl {
         Self {}
     }
 
-    pub async fn run<F, Fut>(self, _: F)
-    where
-        F: Fn(Event) -> Fut,
-        Fut: Future<Output = ()>,
-    {
+    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
+        iter::once(Event::Paint)
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

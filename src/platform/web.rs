@@ -1,5 +1,5 @@
 use alloc::string::ToString;
-use core::future::Future;
+use core::iter;
 
 use js_sys::Promise;
 use raw_window_handle::{RawWindowHandle, WebWindowHandle};
@@ -35,26 +35,20 @@ impl WindowImpl {
         Self { id }
     }
 
-    pub async fn run<F, Fut>(self, handler: F)
-    where
-        F: Fn(Event) -> Fut + 'static,
-        Fut: Future<Output = ()>,
-    {
-        loop {
-            handler(Event::Paint).await;
+    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
+        let future = JsFuture::from(Promise::new(&mut |resolve, _| {
+            let closure = Closure::once_into_js(move || {
+                resolve.call0(&JsValue::NULL).unwrap();
+            });
 
-            let future = JsFuture::from(Promise::new(&mut |resolve, _| {
-                let closure = Closure::once_into_js(move || {
-                    resolve.call0(&JsValue::NULL).unwrap();
-                });
+            web_sys::window()
+                .unwrap()
+                .request_animation_frame(closure.as_ref().unchecked_ref())
+                .unwrap();
+        }));
+        future.await.unwrap();
 
-                web_sys::window()
-                    .unwrap()
-                    .request_animation_frame(closure.as_ref().unchecked_ref())
-                    .unwrap();
-            }));
-            future.await.unwrap();
-        }
+        iter::once(Event::Paint)
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

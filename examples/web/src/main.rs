@@ -4,7 +4,12 @@ use windowing::Window;
 
 pub fn main() {
     spawn_local(async move {
-        let w = Window::new(640, 480, "test");
-        w.run().await;
+        let mut w = Window::new(640, 480, "test");
+        loop {
+            let events = w.next_events().await;
+            for event in events {
+                println!("{:?}", event);
+            }
+        }
     });
 }

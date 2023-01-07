@@ -64,23 +64,15 @@ impl WindowImpl {
         }
     }
 
-    pub async fn run<F, Fut>(mut self, callback: F)
-    where
-        F: Fn(Event) -> Fut,
-        Fut: Future<Output = ()>,
-    {
+    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
         let mut msg = Default::default();
 
-        unsafe {
-            while GetMessageW(&mut msg, HWND(0), 0, 0).into() {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
-
-                for event in self.inner.events.drain(..) {
-                    callback(event).await
-                }
-            }
+        while PeekMessageW(&mut msg, HWND(0), 0, 0, TRUE).into() {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
         }
+
+        iter::once(Event::Paint)
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {
