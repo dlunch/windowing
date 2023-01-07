@@ -1,5 +1,6 @@
 use std::{cmp::min, future::Future, io, thread, time::Duration};
 
+use raw_window_handle::{RawWindowHandle, WaylandWindowHandle};
 use smithay_client_toolkit::{
     environment::Environment,
     new_default_environment,
@@ -91,6 +92,13 @@ impl WindowImpl {
 
             thread::sleep(Duration::from_millis(16));
         }
+    }
+
+    pub fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut window_handle = WaylandWindowHandle::empty();
+        window_handle.surface = self.window.surface() as *mut _;
+
+        RawWindowHandle::Wayland(window_handle)
     }
 }
 
