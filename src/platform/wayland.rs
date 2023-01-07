@@ -96,7 +96,7 @@ impl WindowImpl {
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {
         let mut window_handle = WaylandWindowHandle::empty();
-        window_handle.surface = self.window.surface() as *mut _;
+        window_handle.surface = self.window.surface().as_ref().c_ptr() as *mut _;
 
         RawWindowHandle::Wayland(window_handle)
     }
