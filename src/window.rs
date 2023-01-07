@@ -1,3 +1,5 @@
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+
 use crate::platform::WindowImpl;
 
 pub struct Window {
@@ -17,5 +19,11 @@ impl Window {
                 println!("{event:?}");
             })
             .await
+    }
+}
+
+unsafe impl HasRawWindowHandle for Window {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        self.window_impl.raw_window_handle()
     }
 }

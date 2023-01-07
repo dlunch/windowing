@@ -1,9 +1,10 @@
 use std::{default::Default, future::Future, iter};
 
+use raw_window_handle::{RawWindowHandle, Win32WindowHandle};
 use windows::{
     core::{w, PCWSTR},
     Win32::{
-        Foundation::{HWND, LPARAM, LRESULT, WPARAM},
+        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
         System::LibraryLoader::GetModuleHandleW,
         UI::WindowsAndMessaging::{
             CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, PostQuitMessage, RegisterClassW,
@@ -22,12 +23,12 @@ pub struct WindowImpl {
 impl WindowImpl {
     pub fn new(width: i32, height: i32, title: &str) -> Self {
         unsafe {
-            let instance = GetModuleHandleW(None).unwrap();
+            let hinstance = GetModuleHandleW(None).unwrap();
             let cursor = LoadCursorW(None, IDC_ARROW).unwrap();
 
             let wnd_class = WNDCLASSW {
                 hCursor: cursor,
-                hInstance: instance,
+                hInstance: hinstance,
                 lpszClassName: w!("windowing"),
 
                 style: CS_HREDRAW | CS_VREDRAW,
@@ -40,7 +41,8 @@ impl WindowImpl {
             let title = title.encode_utf16().chain(iter::once(0)).collect::<Box<[u16]>>();
 
             let inner = Box::new(WindowImplInner {
-                handle: HWND(0),
+                hwnd: HWND(0),
+                hinstance,
                 events: Vec::new(),
             });
             CreateWindowExW(
@@ -54,7 +56,7 @@ impl WindowImpl {
                 height,
                 None,
                 None,
-                instance,
+                hinstance,
                 Some(inner.as_ref() as *const _ as *const _),
             );
 
@@ -81,6 +83,14 @@ impl WindowImpl {
         }
     }
 
+    pub fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut window_handle = Win32WindowHandle::empty();
+        window_handle.hwnd = self.inner.hwnd.0 as *mut _;
+        window_handle.hinstance = self.inner.hinstance.0 as *mut _;
+
+        RawWindowHandle::Win32(window_handle)
+    }
+
     unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
         let mut userdata = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
         if userdata == 0 && (msg == WM_NCCREATE || msg == WM_CREATE) {
@@ -89,7 +99,7 @@ impl WindowImpl {
 
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, inner as _);
 
-            (*inner).handle = hwnd;
+            (*inner).hwnd = hwnd;
 
             userdata = inner as isize;
         }
@@ -104,7 +114,8 @@ impl WindowImpl {
 }
 
 struct WindowImplInner {
-    handle: HWND,
+    hwnd: HWND,
+    hinstance: HINSTANCE,
     events: Vec<Event>,
 }
 
@@ -121,7 +132,7 @@ impl WindowImplInner {
 
                 LRESULT(0)
             }
-            _ => unsafe { DefWindowProcW(self.handle, msg, wparam, lparam) },
+            _ => unsafe { DefWindowProcW(self.hwnd, msg, wparam, lparam) },
         }
     }
 }
