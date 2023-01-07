@@ -46,10 +46,11 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           components: rustfmt, clippy
+          target: wasm32-unknown-unknown
 
       - name: Target wasm
         if: matrix.wasm == true
-        run: mkdir -p .cargo && echo '[build]\ntarget = "wasm32-unknown-unknown"' > .cargo/config
+        run: mkdir -p .cargo && echo -e '[build]\ntarget = "wasm32-unknown-unknown"' > .cargo/config
 
       - uses: actions-rs/cargo@v1
         with:
