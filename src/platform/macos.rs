@@ -1,5 +1,7 @@
 use std::future::Future;
 
+use raw_window_handle::{AppKitWindowHandle, RawWindowHandle};
+
 use crate::Event;
 
 #[derive(Default)]
@@ -15,5 +17,12 @@ impl WindowImpl {
         F: Fn(Event) -> Fut,
         Fut: Future<Output = ()>,
     {
+    }
+
+    pub fn raw_window_handle(&self) -> RawWindowHandle {
+        let mut window_handle = AppKitWindowHandle::empty();
+        // TODO
+
+        RawWindowHandle::AppKit(window_handle)
     }
 }
