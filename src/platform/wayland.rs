@@ -1,4 +1,6 @@
-use std::{cmp::min, future::Future, io, thread, time::Duration};
+use alloc::vec::Vec;
+use core::{cmp::min, future::Future, time::Duration};
+use std::{io, thread};
 
 use raw_window_handle::{RawWindowHandle, WaylandWindowHandle};
 use smithay_client_toolkit::{

@@ -1,4 +1,4 @@
-use std::future::Future;
+use core::future::Future;
 
 use raw_window_handle::{AppKitWindowHandle, RawWindowHandle};
 

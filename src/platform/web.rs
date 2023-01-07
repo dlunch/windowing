@@ -1,4 +1,5 @@
-use std::future::Future;
+use alloc::string::ToString;
+use core::future::Future;
 
 use js_sys::Promise;
 use raw_window_handle::{RawWindowHandle, WebWindowHandle};

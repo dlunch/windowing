@@ -1,4 +1,4 @@
-use std::{default::Default, future::Future, iter};
+use core::{default::Default, future::Future, iter};
 
 use raw_window_handle::{RawWindowHandle, Win32WindowHandle};
 use windows::{
