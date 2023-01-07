@@ -1,3 +1,5 @@
+use core::iter;
+
 use raw_window_handle::{AppKitWindowHandle, RawWindowHandle};
 
 use crate::Event;
