@@ -12,7 +12,7 @@ impl WindowImpl {
         Self {}
     }
 
-    pub async fn run<F, Fut>(mut self, _: F)
+    pub async fn run<F, Fut>(self, _: F)
     where
         F: Fn(Event) -> Fut,
         Fut: Future<Output = ()>,
@@ -20,7 +20,7 @@ impl WindowImpl {
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut window_handle = AppKitWindowHandle::empty();
+        let window_handle = AppKitWindowHandle::empty();
         // TODO
 
         RawWindowHandle::AppKit(window_handle)
