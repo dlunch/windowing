@@ -8,6 +8,8 @@ use web_sys::{Document, HtmlCanvasElement};
 
 use crate::Event;
 
+static mut LAST_ID: u32 = 0;
+
 pub struct WindowImpl {
     id: u32,
 }
@@ -21,7 +23,10 @@ impl WindowImpl {
             .dyn_into::<HtmlCanvasElement>()
             .unwrap();
 
-        let id = 0; // TODO
+        let id = unsafe {
+            LAST_ID += 1;
+            LAST_ID
+        };
         canvas.set_attribute("data-raw-handle", &id.to_string()).unwrap();
 
         Self { id }
