@@ -57,6 +57,7 @@ jobs:
           command: build
 
       - uses: actions-rs/cargo@v1
+        if: matrix.wasm == false
         with:
           command: test
           args: --all
