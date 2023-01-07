@@ -16,7 +16,7 @@ pub struct WindowImpl {
 }
 
 impl WindowImpl {
-    pub fn new(_width: i32, _height: i32, _title: &str) -> Self {
+    pub fn new(width: i32, height: i32, _title: &str) -> Self {
         let window = web_sys::window().unwrap();
 
         let canvas = Document::create_element(&window.document().unwrap(), "canvas")
@@ -29,6 +29,8 @@ impl WindowImpl {
             LAST_ID
         };
         canvas.set_attribute("data-raw-handle", &id.to_string()).unwrap();
+        canvas.set_attribute("height", &height.to_string()).unwrap();
+        canvas.set_attribute("width", &width.to_string()).unwrap();
 
         Self { id }
     }
