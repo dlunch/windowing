@@ -45,6 +45,9 @@ impl WindowImpl {
         if wait {
             self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}")).unwrap();
         } else {
+            self.queue
+                .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
+                .unwrap();
             {
                 let read_guard = self.queue.prepare_read().unwrap();
                 let r = read_guard.read_events();
@@ -54,9 +57,6 @@ impl WindowImpl {
                     }
                 }
             }
-            self.queue
-                .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
-                .unwrap();
         }
 
         for event in events {
