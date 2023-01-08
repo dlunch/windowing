@@ -24,8 +24,8 @@ impl WindowImpl {
     }
 
     pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        let mut window_handle = AppKitDisplayHandle::empty();
+        let display_handle = AppKitDisplayHandle::empty();
 
-        RawDisplayHandle::AppKit(window_handle)
+        RawDisplayHandle::AppKit(display_handle)
     }
 }

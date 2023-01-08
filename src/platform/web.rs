@@ -62,8 +62,8 @@ impl WindowImpl {
         RawWindowHandle::Web(window_handle)
     }
     pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        let mut window_handle = WebDisplayHandle::empty();
+        let display_handle = WebDisplayHandle::empty();
 
-        RawDisplayHandle::Web(window_handle)
+        RawDisplayHandle::Web(display_handle)
     }
 }

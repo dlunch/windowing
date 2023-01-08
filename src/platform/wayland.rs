@@ -90,9 +90,9 @@ impl WindowImpl {
     }
 
     pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        let mut window_handle = WaylandDisplayHandle::empty();
-        window_handle.display = self.queue.display().get_display_ptr() as *mut _;
+        let mut display_handle = WaylandDisplayHandle::empty();
+        display_handle.display = self.queue.display().get_display_ptr() as *mut _;
 
-        RawDisplayHandle::Wayland(window_handle)
+        RawDisplayHandle::Wayland(display_handle)
     }
 }

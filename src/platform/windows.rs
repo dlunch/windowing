@@ -91,9 +91,9 @@ impl WindowImpl {
     }
 
     pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        let mut window_handle = WindowsDisplayHandle::empty();
+        let display_handle = WindowsDisplayHandle::empty();
 
-        RawDisplayHandle::Windows(window_handle)
+        RawDisplayHandle::Windows(display_handle)
     }
 
     unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
