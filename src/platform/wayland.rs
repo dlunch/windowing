@@ -50,23 +50,27 @@ impl WindowImpl {
         }
     }
 
-    pub async fn next_events(&mut self) -> impl Iterator<Item = Event> {
+    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
         let mut pool = self.env.create_auto_pool().expect("Failed to create a memory pool !");
 
         let mut events = Vec::<WEvent>::new();
-        {
-            let read_guard = self.queue.prepare_read().unwrap();
-            let r = read_guard.read_events();
-            if let Err(err) = r {
-                if err.kind() != io::ErrorKind::WouldBlock {
-                    panic!("{}", err);
+
+        if wait {
+            self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}")).unwrap();
+        } else {
+            {
+                let read_guard = self.queue.prepare_read().unwrap();
+                let r = read_guard.read_events();
+                if let Err(err) = r {
+                    if err.kind() != io::ErrorKind::WouldBlock {
+                        panic!("{}", err);
+                    }
                 }
             }
+            self.queue
+                .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
+                .unwrap();
         }
-
-        self.queue
-            .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
-            .unwrap();
 
         for event in events {
             match event {

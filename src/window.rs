@@ -13,9 +13,8 @@ impl Window {
         Self { window_impl }
     }
 
-    // wasm caveat: This function waits for next frame
-    pub async fn next_events(&mut self) -> impl Iterator<Item = Event> {
-        self.window_impl.next_events().await
+    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
+        self.window_impl.next_events(wait).await
     }
 }
 

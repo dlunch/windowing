@@ -12,7 +12,7 @@ impl WindowImpl {
         Self {}
     }
 
-    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
+    pub async fn next_events(&self, _: bool) -> impl Iterator<Item = Event> {
         iter::once(Event::Paint)
     }
 

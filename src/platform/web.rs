@@ -35,18 +35,22 @@ impl WindowImpl {
         Self { id }
     }
 
-    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
-        let future = JsFuture::from(Promise::new(&mut |resolve, _| {
-            let closure = Closure::once_into_js(move || {
-                resolve.call0(&JsValue::NULL).unwrap();
-            });
+    pub async fn next_events(&self, wait: bool) -> impl Iterator<Item = Event> {
+        if wait {
+            loop {
+                let future = JsFuture::from(Promise::new(&mut |resolve, _| {
+                    let closure = Closure::once_into_js(move || {
+                        resolve.call0(&JsValue::NULL).unwrap();
+                    });
 
-            web_sys::window()
-                .unwrap()
-                .request_animation_frame(closure.as_ref().unchecked_ref())
-                .unwrap();
-        }));
-        future.await.unwrap();
+                    web_sys::window()
+                        .unwrap()
+                        .request_animation_frame(closure.as_ref().unchecked_ref())
+                        .unwrap();
+                }));
+                future.await.unwrap();
+            }
+        }
 
         iter::once(Event::Paint)
     }

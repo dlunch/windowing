@@ -7,9 +7,9 @@ use windows::{
         Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
         System::LibraryLoader::GetModuleHandleW,
         UI::WindowsAndMessaging::{
-            CreateWindowExW, DefWindowProcW, DispatchMessageW, GetWindowLongPtrW, LoadCursorW, PeekMessageW, PostQuitMessage, RegisterClassW,
-            SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW, PM_REMOVE,
-            WM_CREATE, WM_DESTROY, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW, WS_VISIBLE,
+            CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, PeekMessageW, PostQuitMessage,
+            RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW,
+            PM_REMOVE, WM_CREATE, WM_DESTROY, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW, WS_VISIBLE,
         },
     },
 };
@@ -64,11 +64,16 @@ impl WindowImpl {
         }
     }
 
-    pub async fn next_events(&self) -> impl Iterator<Item = Event> {
+    pub async fn next_events(&self, wait: bool) -> impl Iterator<Item = Event> {
         let mut msg = Default::default();
 
         unsafe {
             while PeekMessageW(&mut msg, HWND(0), 0, 0, PM_REMOVE).into() {
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
+            }
+            if wait {
+                GetMessageW(&mut msg, HWND(0), 0, 0);
                 TranslateMessage(&msg);
                 DispatchMessageW(&msg);
             }
