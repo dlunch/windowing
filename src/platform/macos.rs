@@ -1,6 +1,6 @@
 use core::iter;
 
-use raw_window_handle::{AppKitWindowHandle, RawWindowHandle};
+use raw_window_handle::{AppKitDisplayHandle, AppKitWindowHandle, RawDisplayHandle, RawWindowHandle};
 
 use crate::Event;
 
@@ -21,5 +21,11 @@ impl WindowImpl {
         // TODO
 
         RawWindowHandle::AppKit(window_handle)
+    }
+
+    pub fn raw_display_handle(&self) -> RawDisplayHandle {
+        let mut window_handle = AppKitDisplayHandle::empty();
+
+        RawDisplayHandle::AppKit(window_handle)
     }
 }

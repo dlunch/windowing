@@ -1,6 +1,6 @@
 use core::{default::Default, iter};
 
-use raw_window_handle::{RawWindowHandle, Win32WindowHandle};
+use raw_window_handle::{RawDisplayHandle, RawWindowHandle, Win32WindowHandle, WindowsDisplayHandle};
 use windows::{
     core::{w, PCWSTR},
     Win32::{
@@ -88,6 +88,12 @@ impl WindowImpl {
         window_handle.hinstance = self.inner.hinstance.0 as *mut _;
 
         RawWindowHandle::Win32(window_handle)
+    }
+
+    pub fn raw_display_handle(&self) -> RawDisplayHandle {
+        let mut window_handle = WindowsDisplayHandle::empty();
+
+        RawDisplayHandle::Windows(window_handle)
     }
 
     unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {

@@ -2,7 +2,7 @@ use alloc::string::ToString;
 use core::iter;
 
 use js_sys::Promise;
-use raw_window_handle::{RawWindowHandle, WebWindowHandle};
+use raw_window_handle::{RawDisplayHandle, RawWindowHandle, WebDisplayHandle, WebWindowHandle};
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Document, HtmlCanvasElement};
@@ -60,5 +60,10 @@ impl WindowImpl {
         window_handle.id = self.id;
 
         RawWindowHandle::Web(window_handle)
+    }
+    pub fn raw_display_handle(&self) -> RawDisplayHandle {
+        let mut window_handle = WebDisplayHandle::empty();
+
+        RawDisplayHandle::Web(window_handle)
     }
 }

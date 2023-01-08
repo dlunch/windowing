@@ -1,4 +1,4 @@
-use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
+use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
 
 use crate::{event::Event, platform::WindowImpl};
 
@@ -21,5 +21,11 @@ impl Window {
 unsafe impl HasRawWindowHandle for Window {
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.window_impl.raw_window_handle()
+    }
+}
+
+unsafe impl HasRawDisplayHandle for Window {
+    fn raw_display_handle(&self) -> RawDisplayHandle {
+        self.window_impl.raw_display_handle()
     }
 }

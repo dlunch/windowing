@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use core::iter;
 use std::io;
 
-use raw_window_handle::{RawWindowHandle, WaylandWindowHandle};
+use raw_window_handle::{RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle};
 use smithay_client_toolkit::{
     new_default_environment,
     reexports::client::EventQueue,
@@ -87,5 +87,12 @@ impl WindowImpl {
         window_handle.surface = self.window.surface().as_ref().c_ptr() as *mut _;
 
         RawWindowHandle::Wayland(window_handle)
+    }
+
+    pub fn raw_display_handle(&self) -> RawDisplayHandle {
+        let mut window_handle = WaylandDisplayHandle::empty();
+        window_handle.display = self.queue.display().get_display_ptr() as *mut _;
+
+        RawDisplayHandle::Wayland(window_handle)
     }
 }
