@@ -39,7 +39,7 @@ impl WindowImpl {
         Self { window, queue, dimensions }
     }
 
-    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
+    pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
         let mut events = Vec::<WEvent>::new();
 
         if wait {
@@ -79,7 +79,7 @@ impl WindowImpl {
         }
         self.queue.display().flush().unwrap();
 
-        iter::once(Event::Paint)
+        Some(ter::once(Event::Paint))
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

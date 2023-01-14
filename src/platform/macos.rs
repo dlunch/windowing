@@ -12,8 +12,8 @@ impl WindowImpl {
         Self {}
     }
 
-    pub async fn next_events(&self, _: bool) -> impl Iterator<Item = Event> {
-        iter::once(Event::Paint)
+    pub async fn next_events(&self, _: bool) -> Option<impl Iterator<Item = Event>> {
+        Some(iter::once(Event::Paint))
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {
