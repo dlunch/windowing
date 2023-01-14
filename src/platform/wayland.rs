@@ -20,7 +20,7 @@ pub struct WindowImpl {
 }
 
 impl WindowImpl {
-    pub fn new(width: i32, height: i32, title: &str) -> Self {
+    pub async fn new(width: i32, height: i32, title: &str) -> Self {
         let (env, _, queue) = new_default_environment!(Wayland, desktop).expect("Unable to connect to a Wayland compositor");
 
         let surface = env.create_surface().detach();

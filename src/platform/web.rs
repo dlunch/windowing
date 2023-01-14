@@ -16,7 +16,7 @@ pub struct WindowImpl {
 }
 
 impl WindowImpl {
-    pub fn new(width: i32, height: i32, _title: &str) -> Self {
+    pub async fn new(width: i32, height: i32, _title: &str) -> Self {
         let window = web_sys::window().unwrap();
 
         let canvas = Document::create_element(&window.document().unwrap(), "canvas")

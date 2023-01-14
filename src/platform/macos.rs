@@ -8,7 +8,7 @@ use crate::Event;
 pub struct WindowImpl {}
 
 impl WindowImpl {
-    pub fn new(_width: i32, _height: i32, _title: &str) -> Self {
+    pub async fn new(_width: i32, _height: i32, _title: &str) -> Self {
         Self {}
     }
 
