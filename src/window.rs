@@ -7,13 +7,13 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(width: i32, height: i32, title: &str) -> Self {
-        let window_impl = WindowImpl::new(width, height, title);
+    pub async fn new(width: i32, height: i32, title: &str) -> Self {
+        let window_impl = WindowImpl::new(width, height, title).await;
 
         Self { window_impl }
     }
 
-    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
+    pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
         self.window_impl.next_events(wait).await
     }
 }
