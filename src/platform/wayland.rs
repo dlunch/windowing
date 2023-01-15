@@ -65,7 +65,7 @@ impl WindowImpl {
                     self.window.refresh();
                     self.window.surface().commit();
                 }
-                WEvent::Close => return iter::once(Event::Close),
+                WEvent::Close => return Some(iter::once(Event::Close)),
                 WEvent::Configure { new_size, states } => {
                     if let Some((w, h)) = new_size {
                         self.window.resize(w, h);
@@ -79,7 +79,7 @@ impl WindowImpl {
         }
         self.queue.display().flush().unwrap();
 
-        Some(ter::once(Event::Paint))
+        Some(iter::once(Event::Paint))
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {
