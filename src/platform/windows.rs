@@ -93,15 +93,19 @@ impl WindowImpl {
         Self { hwnd, hinstance, rx }
     }
 
-    pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
+    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
         if wait {
             let event = self.rx.next().await.unwrap().event();
 
-            Some(iter::once(event))
+            vec![event].into_iter()
         } else {
             let event = self.rx.try_next().unwrap();
 
-            event.map(|x| iter::once(x.event()))
+            if let Some(event) = event {
+                vec![event.event()].into_iter()
+            } else {
+                Vec::new().into_iter()
+            }
         }
     }
 
