@@ -1,5 +1,3 @@
-use alloc::vec::Vec;
-use core::iter;
 use std::{
     io,
     os::unix::io::{AsRawFd, RawFd},
@@ -61,7 +59,7 @@ impl WindowImpl {
         }
     }
 
-    pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
+    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
         let mut events = Vec::<WEvent>::new();
         self.queue.display().flush().unwrap();
 
@@ -89,7 +87,7 @@ impl WindowImpl {
                     self.window.refresh();
                     self.window.surface().commit();
                 }
-                WEvent::Close => return Some(iter::once(Event::Close)),
+                WEvent::Close => return vec![Event::Close].into_iter(),
                 WEvent::Configure { new_size, states } => {
                     if let Some((w, h)) = new_size {
                         self.window.resize(w, h);
@@ -102,7 +100,7 @@ impl WindowImpl {
             }
         }
 
-        Some(iter::once(Event::Paint))
+        Vec::new().into_iter()
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

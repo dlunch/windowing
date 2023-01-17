@@ -13,7 +13,7 @@ impl Window {
         Self { window_impl }
     }
 
-    pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
+    pub async fn next_events(&mut self, wait: bool) -> impl Iterator<Item = Event> {
         self.window_impl.next_events(wait).await
     }
 }

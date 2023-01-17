@@ -35,7 +35,7 @@ impl WindowImpl {
         Self { id }
     }
 
-    pub async fn next_events(&self, wait: bool) -> Option<impl Iterator<Item = Event>> {
+    pub async fn next_events(&self, wait: bool) -> impl Iterator<Item = Event> {
         if wait {
             loop {
                 let future = JsFuture::from(Promise::new(&mut |resolve, _| {
@@ -52,7 +52,7 @@ impl WindowImpl {
             }
         }
 
-        Some(iter::once(Event::Paint))
+        iter::once(Event::Paint)
     }
 
     pub fn raw_window_handle(&self) -> RawWindowHandle {

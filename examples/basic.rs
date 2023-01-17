@@ -15,7 +15,7 @@ pub fn main() {
 pub async fn run() {
     let mut w = Window::new(640, 480, "test").await;
     loop {
-        let events = w.next_events(true).await.unwrap();
+        let events = w.next_events(true).await;
         for event in events {
             println!("{:?}", event);
         }
