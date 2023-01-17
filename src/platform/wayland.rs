@@ -1,6 +1,9 @@
 use alloc::vec::Vec;
 use core::iter;
-use std::io;
+use std::{
+    io,
+    os::unix::io::{AsRawFd, RawFd},
+};
 
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle};
 use smithay_client_toolkit::{
@@ -8,20 +11,32 @@ use smithay_client_toolkit::{
     reexports::client::EventQueue,
     window::{Event as WEvent, FallbackFrame, Window},
 };
+use tokio::io::unix::AsyncFd;
 
 use crate::Event;
 
 smithay_client_toolkit::default_environment!(Wayland, desktop);
 
+struct WaylandConnectionFd {
+    connection_fd: RawFd,
+}
+
+impl AsRawFd for WaylandConnectionFd {
+    fn as_raw_fd(&self) -> RawFd {
+        self.connection_fd
+    }
+}
+
 pub struct WindowImpl {
     window: Window<FallbackFrame>,
     queue: EventQueue,
     dimensions: (u32, u32),
+    connection_fd: AsyncFd<WaylandConnectionFd>,
 }
 
 impl WindowImpl {
     pub async fn new(width: i32, height: i32, title: &str) -> Self {
-        let (env, _, queue) = new_default_environment!(Wayland, desktop).expect("Unable to connect to a Wayland compositor");
+        let (env, display, queue) = new_default_environment!(Wayland, desktop).expect("Unable to connect to a Wayland compositor");
 
         let surface = env.create_surface().detach();
         let dimensions = (width as u32, height as u32);
@@ -36,28 +51,37 @@ impl WindowImpl {
 
         window.set_title(title.into());
 
-        Self { window, queue, dimensions }
+        let connection_fd = display.get_connection_fd();
+
+        Self {
+            window,
+            queue,
+            dimensions,
+            connection_fd: AsyncFd::new(WaylandConnectionFd { connection_fd }).unwrap(),
+        }
     }
 
     pub async fn next_events(&mut self, wait: bool) -> Option<impl Iterator<Item = Event>> {
         let mut events = Vec::<WEvent>::new();
+        self.queue.display().flush().unwrap();
 
         if wait {
-            self.queue.dispatch(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}")).unwrap();
-        } else {
-            self.queue
-                .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
-                .unwrap();
-            {
-                let read_guard = self.queue.prepare_read().unwrap();
-                let r = read_guard.read_events();
-                if let Err(err) = r {
-                    if err.kind() != io::ErrorKind::WouldBlock {
-                        panic!("{}", err);
-                    }
+            self.connection_fd.readable().await.unwrap().clear_ready();
+        }
+
+        {
+            let read_guard = self.queue.prepare_read().unwrap();
+            let r = read_guard.read_events();
+            if let Err(err) = r {
+                if err.kind() != io::ErrorKind::WouldBlock {
+                    panic!("{}", err);
                 }
             }
         }
+
+        self.queue
+            .dispatch_pending(&mut events, |e, o, _| println!("Unhandled {e:?} {o:?}"))
+            .unwrap();
 
         for event in events {
             match event {
@@ -77,7 +101,6 @@ impl WindowImpl {
                 }
             }
         }
-        self.queue.display().flush().unwrap();
 
         Some(iter::once(Event::Paint))
     }

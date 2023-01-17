@@ -20,6 +20,7 @@ js-sys = { version = "^0.3", default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 futures = { version = "^0.3", default-features = false, features = ["std"] }
+tokio = { version = "^1.24", features = ["net"] }
 
 [dev-dependencies]
 tokio = { version = "^1.24", features = ["rt"] }
