@@ -67,8 +67,7 @@ impl WindowImpl {
             self.connection_fd.readable().await.unwrap().clear_ready();
         }
 
-        {
-            let read_guard = self.queue.prepare_read().unwrap();
+        if let Some(read_guard) = self.queue.prepare_read() {
             let r = read_guard.read_events();
             if let Err(err) = r {
                 if err.kind() != io::ErrorKind::WouldBlock {
